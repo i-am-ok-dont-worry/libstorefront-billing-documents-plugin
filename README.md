@@ -48,8 +48,8 @@ interface BillingDocument {
 ## Service
 Plugin registers the [BillingDocumentsService](https://gitlab.grupakmk.pl/internal/frontend/api/addons/libstorefront-addons/libstorefront-store-credit-plugin/-/blob/master/src/service/index.ts) that serves as a plugin entry point.
 Service exposes methods:
-* `getBillingDocuments ({ sortBy, sortDir, pageSize, currentPage }: SearchCriteriaFilter = {}): Promise<BillingDocument[]>` - returns billing documents for current user
-* `getBillingDocument (storeCreditId: string): Promise<BillingDocument>` - returns billing document details
+* `getBillingDocuments ({ sortBy, sortDir, pageSize, currentPage }: SearchCriteriaFilter): Promise<BillingDocument[]>` - returns billing documents for current user
+* `getBillingDocument (entityId: string): Promise<BillingDocument>` - returns billing document details
 * `getBillingDocumentTypes ({ sortBy, sortDir, pageSize, currentPage }: SearchCriteriaFilter = {}): Promise<BillingDocumentType[]>` - returns document types for user
 * `getBillingDocumentType (typeId: string): Promise<BillingDocumentType>` - returns billing document type
 

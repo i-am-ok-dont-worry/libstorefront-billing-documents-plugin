@@ -1,5 +1,5 @@
 {
-  "name": "libstorefront-billing-address-plugin",
+  "name": "libstorefront-billing-documents-plugin",
   "version": "1.0.0",
   "description": "Plugin for handling billing documents",
   "main": "dist/index.js",

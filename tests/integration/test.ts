@@ -12,8 +12,7 @@ const LSF = new LibStorefront({
 
 (async () => {
     await LSF.UserService.login('test@grupakmk.pl', 'Testowe2!');
-    await LSF.CartService.createCart({ guestCart: false });
-    LSF.get(BillingDocumentsService).getBillingDocuments()
+    LSF.get(BillingDocumentsService).getBillingDocument(3)
         .then(res => {
             debugger
         })

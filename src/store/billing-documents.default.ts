@@ -1,11 +1,13 @@
-import { BillingDocument } from '../types';
+import { BillingDocument, BillingDocumentType } from '../types';
 
 export const BillingDocumentsDefaultState: BillingDocumentsModuleState = {
     items: [],
-    current: null
+    current: null,
+    types: {}
 };
 
 export interface BillingDocumentsModuleState {
     items: BillingDocument[],
-    current: BillingDocument
+    current: BillingDocument,
+    types: Record<string, BillingDocumentType>
 }

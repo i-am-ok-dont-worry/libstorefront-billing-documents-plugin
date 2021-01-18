@@ -20,7 +20,8 @@ export interface BillingDocument {
     first_download_at: string,
     last_download_at: string,
     downloads: number,
-    extension_attributes: Record<string, string | number>
+    extension_attributes: Record<string, string | number>,
+    type?: BillingDocumentType
 }
 
 export interface BillingDocumentType {

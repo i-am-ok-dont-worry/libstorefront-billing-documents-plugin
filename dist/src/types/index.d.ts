@@ -21,6 +21,7 @@ export interface BillingDocument {
     last_download_at: string;
     downloads: number;
     extension_attributes: Record<string, string | number>;
+    type?: BillingDocumentType;
 }
 export interface BillingDocumentType {
     type_id: number;

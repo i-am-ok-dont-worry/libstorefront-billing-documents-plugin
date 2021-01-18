@@ -41,7 +41,8 @@ interface BillingDocument {
     first_download_at: string,
     last_download_at: string,
     downloads: number,
-    extension_attributes: Record<string, string | number>
+    extension_attributes: Record<string, string | number>,
+    type?: BillingDocumentType
 }
 ```
 
@@ -50,15 +51,14 @@ Plugin registers the [BillingDocumentsService](https://gitlab.grupakmk.pl/intern
 Service exposes methods:
 * `getBillingDocuments ({ sortBy, sortDir, pageSize, currentPage }: SearchCriteriaFilter): Promise<BillingDocument[]>` - returns billing documents for current user
 * `getBillingDocument (entityId: string): Promise<BillingDocument>` - returns billing document details
-* `getBillingDocumentTypes ({ sortBy, sortDir, pageSize, currentPage }: SearchCriteriaFilter = {}): Promise<BillingDocumentType[]>` - returns document types for user
-* `getBillingDocumentType (typeId: string): Promise<BillingDocumentType>` - returns billing document type
 
 ## Redux store 
 Plugin adds new state branch `billingDocuments` to the original Libstorefront redux store.
 ```javascript
 interface BillingDocumentsModuleState {
     items: BillingDocument[],
-    current: BillingDocument
+    current: BillingDocument,
+    types: Record<string, BillingDocumentType>
 }
 ```
 

@@ -1,6 +1,6 @@
-import { BillingDocument } from '../types';
+import { BillingDocument, BillingDocumentType } from '../types';
 export declare namespace BillingDocumentsActions {
-    const SN_BILLING_DOCUMENTS = "billing-documents";
+    const SN_BILLING_DOCUMENTS = "billingDocuments";
     const SET_BILLING_DOCUMENTS: string;
     const setBillingDocuments: (documents: BillingDocument[]) => {
         type: string;
@@ -10,5 +10,10 @@ export declare namespace BillingDocumentsActions {
     const setCurrentBillingDocument: (document: BillingDocument) => {
         type: string;
         payload: BillingDocument;
+    };
+    const LOAD_TYPE: string;
+    const loadDocumentTypes: (types: BillingDocumentType[]) => {
+        type: string;
+        payload: BillingDocumentType[];
     };
 }

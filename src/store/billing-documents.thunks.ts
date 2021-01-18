@@ -8,6 +8,7 @@ import {
 } from '@grupakmk/libstorefront';
 import { BillingDocumentsDao } from '../dao';
 import { BillingDocumentsActions } from './billing-documents.actions';
+import { getBillingType } from './billing-documents.selector';
 
 export namespace BillingDocumentsThunks {
     export const getBillingDocuments = (filter: SearchCriteriaFilter) => async (dispatch, getState) => {
@@ -22,7 +23,9 @@ export namespace BillingDocumentsThunks {
 
             if (response && response.code === HttpStatus.OK) {
                 const { items } = response.result;
-                const docs = items instanceof Array ? items[0] : items;
+                let docs = items instanceof Array ? items : [items];
+                docs = docs.map(doc => ({ ...doc, type: getBillingType(doc.type_id)(getState()) }));
+
                 await dispatch(BillingDocumentsActions.setBillingDocuments(docs));
 
                 return docs;
@@ -30,7 +33,7 @@ export namespace BillingDocumentsThunks {
                 throw new Error('Not found');
             }
         } catch (e) {
-            Logger.info('Cannot fetch store credits: ', 'STORE-CREDIT-PLUGIN', e.message);
+            Logger.info('Cannot fetch store credits: ', 'billing-documents-plugin', e.message);
             throw e;
         }
     }
@@ -42,11 +45,11 @@ export namespace BillingDocumentsThunks {
             const storeCode = StoreViewHandler.currentStoreView().general.store_code;
 
             if (!customer || !token || !customer.current) { throw new Error('Cannot fetch documents for unauthorized user'); }
-            const customerId = customer.current.id;
             const response = await IOCContainer.get(BillingDocumentsDao).getBillingDocument(entityId, token, storeCode);
 
             if (response && response.code === HttpStatus.OK) {
                 const document = response.result;
+                document.type = getBillingType(document.type_id)(getState());
                 await dispatch(BillingDocumentsActions.setCurrentBillingDocument(document));
 
                 return document;
@@ -54,53 +57,32 @@ export namespace BillingDocumentsThunks {
                 throw new Error('Not found');
             }
         } catch (e) {
-            Logger.info('Cannot fetch store credits: ', 'STORE-CREDIT-PLUGIN', e.message);
+            Logger.info('Cannot fetch store credits: ', 'billing-documents-plugin', e.message);
             throw e;
         }
     };
 
-    export const getBillingDocumentTypes = (filter: SearchCriteriaFilter) => async (dispatch, getState) => {
+    export const loadBillingDocumentTypes = () => async (dispatch, getState) => {
         try {
             const customer = IOCContainer.get(AbstractStore).getState().user;
             const token = customer.token;
             const storeCode = StoreViewHandler.currentStoreView().general.store_code;
 
             if (!customer || !token || !customer.current) { throw new Error('Cannot fetch documents types for unauthorized user'); }
-            const customerId = customer.current.id;
-            const response = await IOCContainer.get(BillingDocumentsDao).getBillingDocumentTypes({ customerId, ...filter }, token, storeCode);
+            const response = await IOCContainer.get(BillingDocumentsDao).getBillingDocumentTypes(token, storeCode);
 
             if (response && response.code === HttpStatus.OK) {
                 const { items } = response.result;
-                const docs = items instanceof Array ? items[0] : items;
+                const docs = items instanceof Array ? items : [items];
+                await dispatch(BillingDocumentsActions.loadDocumentTypes(docs));
 
                 return docs;
             } else {
                 throw new Error('Not found');
             }
         } catch (e) {
-            Logger.info('Cannot fetch store credits: ', 'STORE-CREDIT-PLUGIN', e.message);
+            Logger.info('Cannot load types: ', 'billing-documents-plugin', e.message);
             throw e;
         }
-    };
-
-    export const getBillingDocumentType = (typeId: string) => async (dispatch, getState) => {
-        try {
-            const customer = IOCContainer.get(AbstractStore).getState().user;
-            const token = customer.token;
-            const storeCode = StoreViewHandler.currentStoreView().general.store_code;
-
-            if (!customer || !token || !customer.current) { throw new Error('Cannot fetch documents types for unauthorized user'); }
-            const response = await IOCContainer.get(BillingDocumentsDao).getBillingDocumentType(typeId, token, storeCode);
-
-            if (response && response.code === HttpStatus.OK) {
-                const docType = response.result;
-                return docType;
-            } else {
-                throw new Error('Not found');
-            }
-        } catch (e) {
-            Logger.info('Cannot fetch store credits: ', 'STORE-CREDIT-PLUGIN', e.message);
-            throw e;
-        }
-    };
+    }
 }

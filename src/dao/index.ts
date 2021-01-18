@@ -42,18 +42,14 @@ export class BillingDocumentsDao {
         });
     }
 
-    public getBillingDocumentTypes ({ customerId, pageSize, currentPage, sortBy, sortDir }: { customerId: string } & SearchCriteriaFilter, token: string, storeCode?: string): Promise<Task> {
+    public getBillingDocumentTypes (token: string, storeCode?: string): Promise<Task> {
         const query = {
-            pageSize,
-            currentPage,
-            sortBy,
-            sortDir,
             token,
             storeCode
         };
 
         return this.taskQueue.execute({
-            url: URLTransform.getAbsoluteApiUrl('/api/vendor/billing-documents/type/' + customerId + '?' + qs.stringify(query)),
+            url: URLTransform.getAbsoluteApiUrl('/api/vendor/billing-documents/type' + '?' + qs.stringify(query)),
             payload: {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },

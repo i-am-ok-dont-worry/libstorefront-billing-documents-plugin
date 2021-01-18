@@ -1,5 +1,5 @@
 import { AbstractStore, LibstorefrontInnerState, SearchCriteriaFilter } from '@grupakmk/libstorefront';
-import { BillingDocument, BillingDocumentType } from '../types';
+import { BillingDocument } from '../types';
 export declare class BillingDocumentsService {
     private store;
     /**
@@ -15,16 +15,5 @@ export declare class BillingDocumentsService {
      * @returns {StoreCredit} Store credit
      */
     getBillingDocument(storeCreditId: string): Promise<BillingDocument>;
-    /**
-     * Returns list of billing document types
-     * @param {number} amount
-     * @returns {Promise<void>}
-     */
-    getBillingDocumentTypes({ sortBy, sortDir, pageSize, currentPage }?: SearchCriteriaFilter): Promise<BillingDocumentType[]>;
-    /**
-     * Returns billing document type details
-     * @returns {Promise<BillingDocumentType>}
-     */
-    getBillingDocumentType(typeId: string): Promise<BillingDocumentType>;
     constructor(store: AbstractStore<LibstorefrontInnerState>);
 }

@@ -198,18 +198,13 @@ var BillingDocumentsDao = /** @class */ (function () {
             silent: true
         });
     };
-    BillingDocumentsDao.prototype.getBillingDocumentTypes = function (_a, token, storeCode) {
-        var customerId = _a.customerId, pageSize = _a.pageSize, currentPage = _a.currentPage, sortBy = _a.sortBy, sortDir = _a.sortDir;
+    BillingDocumentsDao.prototype.getBillingDocumentTypes = function (token, storeCode) {
         var query = {
-            pageSize: pageSize,
-            currentPage: currentPage,
-            sortBy: sortBy,
-            sortDir: sortDir,
             token: token,
             storeCode: storeCode
         };
         return this.taskQueue.execute({
-            url: libstorefront_1.URLTransform.getAbsoluteApiUrl('/api/vendor/billing-documents/type/' + customerId + '?' + query_string_1.default.stringify(query)),
+            url: libstorefront_1.URLTransform.getAbsoluteApiUrl('/api/vendor/billing-documents/type' + '?' + query_string_1.default.stringify(query)),
             payload: {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
@@ -305,6 +300,7 @@ var billing_documents_thunks_1 = __webpack_require__(/*! ../store/billing-docume
 var BillingDocumentsService = /** @class */ (function () {
     function BillingDocumentsService(store) {
         this.store = store;
+        this.store.dispatch(billing_documents_thunks_1.BillingDocumentsThunks.loadBillingDocumentTypes());
     }
     /**
      * Returns list of customer billing documents
@@ -323,22 +319,6 @@ var BillingDocumentsService = /** @class */ (function () {
      */
     BillingDocumentsService.prototype.getBillingDocument = function (storeCreditId) {
         return this.store.dispatch(billing_documents_thunks_1.BillingDocumentsThunks.getBillingDocument(storeCreditId));
-    };
-    /**
-     * Returns list of billing document types
-     * @param {number} amount
-     * @returns {Promise<void>}
-     */
-    BillingDocumentsService.prototype.getBillingDocumentTypes = function (_a) {
-        var _b = _a === void 0 ? {} : _a, sortBy = _b.sortBy, sortDir = _b.sortDir, pageSize = _b.pageSize, currentPage = _b.currentPage;
-        return this.store.dispatch(billing_documents_thunks_1.BillingDocumentsThunks.getBillingDocumentTypes({ sortBy: sortBy, sortDir: sortDir, pageSize: pageSize, currentPage: currentPage }));
-    };
-    /**
-     * Returns billing document type details
-     * @returns {Promise<BillingDocumentType>}
-     */
-    BillingDocumentsService.prototype.getBillingDocumentType = function (typeId) {
-        return this.store.dispatch(billing_documents_thunks_1.BillingDocumentsThunks.getBillingDocumentType(typeId));
     };
     BillingDocumentsService = __decorate([
         inversify_1.injectable(),
@@ -365,7 +345,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BillingDocumentsActions = void 0;
 var BillingDocumentsActions;
 (function (BillingDocumentsActions) {
-    BillingDocumentsActions.SN_BILLING_DOCUMENTS = 'billing-documents';
+    BillingDocumentsActions.SN_BILLING_DOCUMENTS = 'billingDocuments';
     BillingDocumentsActions.SET_BILLING_DOCUMENTS = BillingDocumentsActions.SN_BILLING_DOCUMENTS + '/SET_BILLING_DOCUMENTS';
     BillingDocumentsActions.setBillingDocuments = function (documents) { return ({
         type: BillingDocumentsActions.SET_BILLING_DOCUMENTS,
@@ -375,6 +355,11 @@ var BillingDocumentsActions;
     BillingDocumentsActions.setCurrentBillingDocument = function (document) { return ({
         type: BillingDocumentsActions.SET_CURRENT,
         payload: document
+    }); };
+    BillingDocumentsActions.LOAD_TYPE = BillingDocumentsActions.SN_BILLING_DOCUMENTS + '/LOAD_TYPES';
+    BillingDocumentsActions.loadDocumentTypes = function (types) { return ({
+        type: BillingDocumentsActions.LOAD_TYPE,
+        payload: types
     }); };
 })(BillingDocumentsActions = exports.BillingDocumentsActions || (exports.BillingDocumentsActions = {}));
 
@@ -394,7 +379,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BillingDocumentsDefaultState = void 0;
 exports.BillingDocumentsDefaultState = {
     items: [],
-    current: null
+    current: null,
+    types: {}
 };
 
 
@@ -432,10 +418,46 @@ var billingDocumentsReducer = function (state, action) {
         case billing_documents_actions_1.BillingDocumentsActions.SET_CURRENT: {
             return __assign(__assign({}, state), { current: action.payload });
         }
+        case billing_documents_actions_1.BillingDocumentsActions.LOAD_TYPE: {
+            var typesMap_1 = (action.payload || []).reduce(function (acc, next) {
+                var _a;
+                return __assign(__assign({}, acc), (_a = {}, _a[next.type_id] = next, _a));
+            }, {});
+            var items = state.items;
+            var current = state.current;
+            if (state.items.length) {
+                items = state.items.map(function (i) { return (__assign(__assign({}, i), { type: typesMap_1[i.type_id] })); });
+            }
+            if (state.current) {
+                current.type = typesMap_1[current.type_id];
+            }
+            return __assign(__assign({}, state), { items: items, current: current, types: typesMap_1 });
+        }
         default: return state || billing_documents_default_1.BillingDocumentsDefaultState;
     }
 };
 exports.billingDocumentsReducer = billingDocumentsReducer;
+
+
+/***/ }),
+
+/***/ "./src/store/billing-documents.selector.ts":
+/*!*************************************************!*\
+  !*** ./src/store/billing-documents.selector.ts ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getBillingType = void 0;
+var reselect_1 = __webpack_require__(/*! reselect */ "reselect");
+var billing_documents_actions_1 = __webpack_require__(/*! ./billing-documents.actions */ "./src/store/billing-documents.actions.ts");
+var getBillingType = function (typeId) { return reselect_1.createSelector([function (state) { return state[billing_documents_actions_1.BillingDocumentsActions.SN_BILLING_DOCUMENTS].types; }], function (types) {
+    return types[typeId];
+}); };
+exports.getBillingType = getBillingType;
 
 
 /***/ }),
@@ -501,6 +523,7 @@ exports.BillingDocumentsThunks = void 0;
 var libstorefront_1 = __webpack_require__(/*! @grupakmk/libstorefront */ "@grupakmk/libstorefront");
 var dao_1 = __webpack_require__(/*! ../dao */ "./src/dao/index.ts");
 var billing_documents_actions_1 = __webpack_require__(/*! ./billing-documents.actions */ "./src/store/billing-documents.actions.ts");
+var billing_documents_selector_1 = __webpack_require__(/*! ./billing-documents.selector */ "./src/store/billing-documents.selector.ts");
 var BillingDocumentsThunks;
 (function (BillingDocumentsThunks) {
     var _this = this;
@@ -522,7 +545,8 @@ var BillingDocumentsThunks;
                     response = _a.sent();
                     if (!(response && response.code === libstorefront_1.HttpStatus.OK)) return [3 /*break*/, 3];
                     items = response.result.items;
-                    docs = items instanceof Array ? items[0] : items;
+                    docs = items instanceof Array ? items : [items];
+                    docs = docs.map(function (doc) { return (__assign(__assign({}, doc), { type: billing_documents_selector_1.getBillingType(doc.type_id)(getState()) })); });
                     return [4 /*yield*/, dispatch(billing_documents_actions_1.BillingDocumentsActions.setBillingDocuments(docs))];
                 case 2:
                     _a.sent();
@@ -531,14 +555,14 @@ var BillingDocumentsThunks;
                 case 4: return [3 /*break*/, 6];
                 case 5:
                     e_1 = _a.sent();
-                    libstorefront_1.Logger.info('Cannot fetch store credits: ', 'STORE-CREDIT-PLUGIN', e_1.message);
+                    libstorefront_1.Logger.info('Cannot fetch store credits: ', 'billing-documents-plugin', e_1.message);
                     throw e_1;
                 case 6: return [2 /*return*/];
             }
         });
     }); }; };
     BillingDocumentsThunks.getBillingDocument = function (entityId) { return function (dispatch, getState) { return __awaiter(_this, void 0, void 0, function () {
-        var customer, token, storeCode, customerId, response, document_1, e_2;
+        var customer, token, storeCode, response, document_1, e_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -549,12 +573,12 @@ var BillingDocumentsThunks;
                     if (!customer || !token || !customer.current) {
                         throw new Error('Cannot fetch documents for unauthorized user');
                     }
-                    customerId = customer.current.id;
                     return [4 /*yield*/, libstorefront_1.IOCContainer.get(dao_1.BillingDocumentsDao).getBillingDocument(entityId, token, storeCode)];
                 case 1:
                     response = _a.sent();
                     if (!(response && response.code === libstorefront_1.HttpStatus.OK)) return [3 /*break*/, 3];
                     document_1 = response.result;
+                    document_1.type = billing_documents_selector_1.getBillingType(document_1.type_id)(getState());
                     return [4 /*yield*/, dispatch(billing_documents_actions_1.BillingDocumentsActions.setCurrentBillingDocument(document_1))];
                 case 2:
                     _a.sent();
@@ -563,73 +587,41 @@ var BillingDocumentsThunks;
                 case 4: return [3 /*break*/, 6];
                 case 5:
                     e_2 = _a.sent();
-                    libstorefront_1.Logger.info('Cannot fetch store credits: ', 'STORE-CREDIT-PLUGIN', e_2.message);
+                    libstorefront_1.Logger.info('Cannot fetch store credits: ', 'billing-documents-plugin', e_2.message);
                     throw e_2;
                 case 6: return [2 /*return*/];
             }
         });
     }); }; };
-    BillingDocumentsThunks.getBillingDocumentTypes = function (filter) { return function (dispatch, getState) { return __awaiter(_this, void 0, void 0, function () {
-        var customer, token, storeCode, customerId, response, items, docs, e_3;
+    BillingDocumentsThunks.loadBillingDocumentTypes = function () { return function (dispatch, getState) { return __awaiter(_this, void 0, void 0, function () {
+        var customer, token, storeCode, response, items, docs, e_3;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 3]);
+                    _a.trys.push([0, 5, , 6]);
                     customer = libstorefront_1.IOCContainer.get(libstorefront_1.AbstractStore).getState().user;
                     token = customer.token;
                     storeCode = libstorefront_1.StoreViewHandler.currentStoreView().general.store_code;
                     if (!customer || !token || !customer.current) {
                         throw new Error('Cannot fetch documents types for unauthorized user');
                     }
-                    customerId = customer.current.id;
-                    return [4 /*yield*/, libstorefront_1.IOCContainer.get(dao_1.BillingDocumentsDao).getBillingDocumentTypes(__assign({ customerId: customerId }, filter), token, storeCode)];
+                    return [4 /*yield*/, libstorefront_1.IOCContainer.get(dao_1.BillingDocumentsDao).getBillingDocumentTypes(token, storeCode)];
                 case 1:
                     response = _a.sent();
-                    if (response && response.code === libstorefront_1.HttpStatus.OK) {
-                        items = response.result.items;
-                        docs = items instanceof Array ? items[0] : items;
-                        return [2 /*return*/, docs];
-                    }
-                    else {
-                        throw new Error('Not found');
-                    }
-                    return [3 /*break*/, 3];
+                    if (!(response && response.code === libstorefront_1.HttpStatus.OK)) return [3 /*break*/, 3];
+                    items = response.result.items;
+                    docs = items instanceof Array ? items : [items];
+                    return [4 /*yield*/, dispatch(billing_documents_actions_1.BillingDocumentsActions.loadDocumentTypes(docs))];
                 case 2:
+                    _a.sent();
+                    return [2 /*return*/, docs];
+                case 3: throw new Error('Not found');
+                case 4: return [3 /*break*/, 6];
+                case 5:
                     e_3 = _a.sent();
-                    libstorefront_1.Logger.info('Cannot fetch store credits: ', 'STORE-CREDIT-PLUGIN', e_3.message);
+                    libstorefront_1.Logger.info('Cannot load types: ', 'billing-documents-plugin', e_3.message);
                     throw e_3;
-                case 3: return [2 /*return*/];
-            }
-        });
-    }); }; };
-    BillingDocumentsThunks.getBillingDocumentType = function (typeId) { return function (dispatch, getState) { return __awaiter(_this, void 0, void 0, function () {
-        var customer, token, storeCode, response, docType, e_4;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    customer = libstorefront_1.IOCContainer.get(libstorefront_1.AbstractStore).getState().user;
-                    token = customer.token;
-                    storeCode = libstorefront_1.StoreViewHandler.currentStoreView().general.store_code;
-                    if (!customer || !token || !customer.current) {
-                        throw new Error('Cannot fetch documents types for unauthorized user');
-                    }
-                    return [4 /*yield*/, libstorefront_1.IOCContainer.get(dao_1.BillingDocumentsDao).getBillingDocumentType(typeId, token, storeCode)];
-                case 1:
-                    response = _a.sent();
-                    if (response && response.code === libstorefront_1.HttpStatus.OK) {
-                        docType = response.result;
-                        return [2 /*return*/, docType];
-                    }
-                    else {
-                        throw new Error('Not found');
-                    }
-                    return [3 /*break*/, 3];
-                case 2:
-                    e_4 = _a.sent();
-                    libstorefront_1.Logger.info('Cannot fetch store credits: ', 'STORE-CREDIT-PLUGIN', e_4.message);
-                    throw e_4;
-                case 3: return [2 /*return*/];
+                case 6: return [2 /*return*/];
             }
         });
     }); }; };
@@ -682,6 +674,17 @@ module.exports = require("inversify");
 /***/ (function(module, exports) {
 
 module.exports = require("query-string");
+
+/***/ }),
+
+/***/ "reselect":
+/*!***************************!*\
+  !*** external "reselect" ***!
+  \***************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("reselect");
 
 /***/ })
 

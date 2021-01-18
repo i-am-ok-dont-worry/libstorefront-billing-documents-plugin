@@ -13,7 +13,7 @@ export class BillingDocumentsService {
      * @returns {Promise<StoreCredit>}
      */
     public getBillingDocuments ({ sortBy, sortDir, pageSize, currentPage }: SearchCriteriaFilter = {}): Promise<BillingDocument[]> {
-        return this.store.dispatch(BillingDocumentsThunks.getBillingDocumnets({ sortBy, sortDir, pageSize, currentPage }));
+        return this.store.dispatch(BillingDocumentsThunks.getBillingDocuments({ sortBy, sortDir, pageSize, currentPage }));
     }
 
     /**

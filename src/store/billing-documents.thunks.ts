@@ -10,7 +10,7 @@ import { BillingDocumentsDao } from '../dao';
 import { BillingDocumentsActions } from './billing-documents.actions';
 
 export namespace BillingDocumentsThunks {
-    export const getBillingDocumnets = (filter: SearchCriteriaFilter) => async (dispatch, getState) => {
+    export const getBillingDocuments = (filter: SearchCriteriaFilter) => async (dispatch, getState) => {
         try {
             const customer = IOCContainer.get(AbstractStore).getState().user;
             const token = customer.token;

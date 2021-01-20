@@ -1,6 +1,7 @@
 import { SearchCriteriaFilter, Task, TaskQueue, URLTransform } from '@grupakmk/libstorefront';
 import { injectable, inject } from 'inversify';
 import qs from 'query-string';
+import fetch from 'isomorphic-fetch';
 
 @injectable()
 export class BillingDocumentsDao {
@@ -73,6 +74,22 @@ export class BillingDocumentsDao {
             },
             silent: true
         });
+    }
+
+    public downloadDocument (entityId: string, token: string, storeCode?: string): Promise<{ status: number, type: string, url: string, body: any, headers: any, blob: () => any }> {
+        const query = {
+            token,
+            storeCode
+        };
+
+        return fetch(
+            URLTransform.getAbsoluteApiUrl('/api/vendor/billing-documents/file/' + entityId + '?' + qs.stringify(query)),
+            {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                mode: 'cors'
+            }
+        );
     }
 
     public constructor(@inject(TaskQueue) private taskQueue: TaskQueue) {}

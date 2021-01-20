@@ -159,6 +159,7 @@ exports.BillingDocumentsDao = void 0;
 var libstorefront_1 = __webpack_require__(/*! @grupakmk/libstorefront */ "@grupakmk/libstorefront");
 var inversify_1 = __webpack_require__(/*! inversify */ "inversify");
 var query_string_1 = __importDefault(__webpack_require__(/*! query-string */ "query-string"));
+var isomorphic_fetch_1 = __importDefault(__webpack_require__(/*! isomorphic-fetch */ "isomorphic-fetch"));
 var BillingDocumentsDao = /** @class */ (function () {
     function BillingDocumentsDao(taskQueue) {
         this.taskQueue = taskQueue;
@@ -228,6 +229,17 @@ var BillingDocumentsDao = /** @class */ (function () {
             silent: true
         });
     };
+    BillingDocumentsDao.prototype.downloadDocument = function (entityId, token, storeCode) {
+        var query = {
+            token: token,
+            storeCode: storeCode
+        };
+        return isomorphic_fetch_1.default(libstorefront_1.URLTransform.getAbsoluteApiUrl('/api/vendor/billing-documents/file/' + entityId + '?' + query_string_1.default.stringify(query)), {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            mode: 'cors'
+        });
+    };
     BillingDocumentsDao = __decorate([
         inversify_1.injectable(),
         __param(0, inversify_1.inject(libstorefront_1.TaskQueue)),
@@ -292,6 +304,42 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BillingDocumentsService = void 0;
 var inversify_1 = __webpack_require__(/*! inversify */ "inversify");
@@ -319,6 +367,18 @@ var BillingDocumentsService = /** @class */ (function () {
      */
     BillingDocumentsService.prototype.getBillingDocument = function (storeCreditId) {
         return this.store.dispatch(billing_documents_thunks_1.BillingDocumentsThunks.getBillingDocument(storeCreditId));
+    };
+    /**
+     * Downloads entity file via Blob
+     * @param entityId
+     */
+    BillingDocumentsService.prototype.downloadDocument = function (entityId) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                this.store.dispatch(billing_documents_thunks_1.BillingDocumentsThunks.downloadBillingDocument(entityId));
+                return [2 /*return*/];
+            });
+        });
     };
     BillingDocumentsService = __decorate([
         inversify_1.injectable(),
@@ -625,6 +685,45 @@ var BillingDocumentsThunks;
             }
         });
     }); }; };
+    BillingDocumentsThunks.downloadBillingDocument = function (entityId) { return function (dispatch, getState) { return __awaiter(_this, void 0, void 0, function () {
+        var customer, token, storeCode, response, attachment, filename, blob, url, a, e_4;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 5, , 6]);
+                    customer = libstorefront_1.IOCContainer.get(libstorefront_1.AbstractStore).getState().user;
+                    token = customer.token;
+                    storeCode = libstorefront_1.StoreViewHandler.currentStoreView().general.store_code;
+                    if (!customer || !token || !customer.current) {
+                        throw new Error('Cannot fetch documents types for unauthorized user');
+                    }
+                    return [4 /*yield*/, libstorefront_1.IOCContainer.get(dao_1.BillingDocumentsDao).downloadDocument(entityId, token, storeCode)];
+                case 1:
+                    response = _a.sent();
+                    if (!(response && response.status === libstorefront_1.HttpStatus.OK)) return [3 /*break*/, 3];
+                    attachment = response.headers.get('Content-Disposition');
+                    filename = attachment ? attachment.split('=')[1] : 'file';
+                    return [4 /*yield*/, response.blob()];
+                case 2:
+                    blob = _a.sent();
+                    url = window.URL.createObjectURL(blob);
+                    a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    return [3 /*break*/, 4];
+                case 3: throw new Error('Not found');
+                case 4: return [3 /*break*/, 6];
+                case 5:
+                    e_4 = _a.sent();
+                    libstorefront_1.Logger.info('Cannot load types: ', 'billing-documents-plugin', e_4.message);
+                    throw e_4;
+                case 6: return [2 /*return*/];
+            }
+        });
+    }); }; };
 })(BillingDocumentsThunks = exports.BillingDocumentsThunks || (exports.BillingDocumentsThunks = {}));
 
 
@@ -663,6 +762,17 @@ module.exports = require("@grupakmk/libstorefront");
 /***/ (function(module, exports) {
 
 module.exports = require("inversify");
+
+/***/ }),
+
+/***/ "isomorphic-fetch":
+/*!***********************************!*\
+  !*** external "isomorphic-fetch" ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("isomorphic-fetch");
 
 /***/ }),
 

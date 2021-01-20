@@ -7,5 +7,13 @@ export declare class BillingDocumentsDao {
     getBillingDocument(entityId: any, token: string, storeCode?: string): Promise<Task>;
     getBillingDocumentTypes(token: string, storeCode?: string): Promise<Task>;
     getBillingDocumentType(typeId: string, token: string, storeCode?: string): Promise<Task>;
+    downloadDocument(entityId: string, token: string, storeCode?: string): Promise<{
+        status: number;
+        type: string;
+        url: string;
+        body: any;
+        headers: any;
+        blob: () => any;
+    }>;
     constructor(taskQueue: TaskQueue);
 }

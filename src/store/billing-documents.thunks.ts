@@ -85,4 +85,35 @@ export namespace BillingDocumentsThunks {
             throw e;
         }
     }
+
+    export const downloadBillingDocument = (entityId: string) => async (dispatch, getState) => {
+        try {
+            const customer = IOCContainer.get(AbstractStore).getState().user;
+            const token = customer.token;
+            const storeCode = StoreViewHandler.currentStoreView().general.store_code;
+
+            if (!customer || !token || !customer.current) { throw new Error('Cannot fetch documents types for unauthorized user'); }
+            const response = await IOCContainer.get(BillingDocumentsDao).downloadDocument(entityId, token, storeCode);
+
+            if (response && response.status === HttpStatus.OK) {
+
+                const attachment = response.headers.get('Content-Disposition');
+                const filename = attachment ? attachment.split('=')[1] : 'file';
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+            } else {
+                throw new Error('Not found');
+            }
+        } catch (e) {
+            Logger.info('Cannot load types: ', 'billing-documents-plugin', e.message);
+            throw e;
+        }
+    }
 }

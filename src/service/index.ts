@@ -2,6 +2,7 @@ import { injectable, inject } from 'inversify';
 import { AbstractStore, LibstorefrontInnerState, SearchCriteriaFilter } from '@grupakmk/libstorefront';
 import { BillingDocumentsThunks } from '../store/billing-documents.thunks';
 import { BillingDocument } from '../types';
+import {BillingDocumentsDao} from "../dao";
 
 @injectable()
 export class BillingDocumentsService {
@@ -23,6 +24,14 @@ export class BillingDocumentsService {
      */
     public getBillingDocument (storeCreditId: string): Promise<BillingDocument> {
         return this.store.dispatch(BillingDocumentsThunks.getBillingDocument(storeCreditId));
+    }
+
+    /**
+     * Downloads entity file via Blob
+     * @param entityId
+     */
+    public async downloadDocument (entityId: string) {
+        this.store.dispatch(BillingDocumentsThunks.downloadBillingDocument(entityId));
     }
 
     public constructor (@inject(AbstractStore) private store: AbstractStore<LibstorefrontInnerState>) {

@@ -12,9 +12,8 @@ const LSF = new LibStorefront({
 
 (async () => {
     await LSF.UserService.login('test@grupakmk.pl', 'Testowe2!');
-    LSF.get(BillingDocumentsService).getBillingDocument(3)
+    LSF.get(BillingDocumentsService).downloadDocument(1)
         .then(res => {
-            debugger
         })
         .catch(err => {
             debugger;

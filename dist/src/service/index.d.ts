@@ -15,5 +15,10 @@ export declare class BillingDocumentsService {
      * @returns {StoreCredit} Store credit
      */
     getBillingDocument(storeCreditId: string): Promise<BillingDocument>;
+    /**
+     * Downloads entity file via Blob
+     * @param entityId
+     */
+    downloadDocument(entityId: string): Promise<void>;
     constructor(store: AbstractStore<LibstorefrontInnerState>);
 }

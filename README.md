@@ -51,6 +51,7 @@ Plugin registers the [BillingDocumentsService](https://gitlab.grupakmk.pl/intern
 Service exposes methods:
 * `getBillingDocuments ({ sortBy, sortDir, pageSize, currentPage }: SearchCriteriaFilter): Promise<BillingDocument[]>` - returns billing documents for current user
 * `getBillingDocument (entityId: string): Promise<BillingDocument>` - returns billing document details
+* `downloadDocument (entityId: string)` - downloads a billing file
 
 ## Redux store 
 Plugin adds new state branch `billingDocuments` to the original Libstorefront redux store.

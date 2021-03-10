@@ -8,7 +8,8 @@ const LSF = new LibStorefront({
     plugins: [
         BillingDocumentsPlugin
     ]
-}, 'http://localhost:9001');
+}, 'https://api.meringer.staging.grupakmk.pl');
+// }, 'http://localhost:9001');
 
 (async () => {
     await LSF.UserService.login('test@grupakmk.pl', 'Testowe2!');

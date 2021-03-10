@@ -1,5 +1,5 @@
 {
-  "name": "libstorefront-billing-documents-plugin",
+  "name": "@grupakmk/libstorefront-billing-documents-plugin",
   "version": "1.0.0",
   "description": "Plugin for handling billing documents",
   "main": "dist/index.js",
@@ -38,5 +38,8 @@
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0",
     "webpack-node-externals": "^2.5.2"
+  },
+  "publishConfig": {
+    "@grupakmk:registry": "https://npm.grupakmk.pl/"
   }
 }

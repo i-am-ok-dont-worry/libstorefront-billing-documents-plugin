@@ -1,6 +1,6 @@
 {
   "name": "@grupakmk/libstorefront-billing-documents-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Plugin for handling billing documents",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
